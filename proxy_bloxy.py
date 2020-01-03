@@ -1,7 +1,7 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 from scapy.all import *
 from time import sleep
-import sys,os,argparse
+import sys,os,argparse,subprocess
 
 FOUND = '\033[2;37;42m'
 ERR = '\033[0;31;40m'
@@ -23,13 +23,13 @@ parser.add_argument('-g', '--gateway', type=str, required=True, help='''Pick you
 parser.add_argument('-t', '--time', type=float, default=0.3 ,required=False, help='''Optional selection of delays between target poisons.''')
 args = parser.parse_args()
 
-'''
+
 def ping(ip):
-    proc = subprocess.Popen(["ping","-c","5",ip], stdout=subprocess.PIPE)
+    proc = subprocess.Popen(["ping","-c","3",ip], stdout=subprocess.PIPE)
     stdout, stderr = proc.communicate()
     response = proc.returncode
     return response
-'''
+
 
 def get_mac_address(ip, interface):
     conf.verb = 0
@@ -38,22 +38,27 @@ def get_mac_address(ip, interface):
         return rcv.sprintf(r"%Ether.src%")
 
 def ip_parser(ap_ip):
-    if ap_ip[1] == "9":
-        cidr = "192.168.1.1/24"
-    elif ap_ip[1] == "0":
-        cidr = "10.0.0.0/24"
-    else:
-        print(BAD_ERR + "Error: Bad gateway IP!" + NONE)
+    ip_list = []
+    range = ap_ip
+    while range.endswith(".") == False:
+        range = range[:-1]
+    for ip in range(1,255):
+        address = range + ip
+        if ping(address) == 0:
+            ip_list.append(address)
+        else:
+            pass
+'''
     arp = ARP(pdst=cidr)
     ether = Ether(dst="ff:ff:ff:ff:ff:ff")
     pckt = ether/arp
     result = srp(packet, timeout=3, verbose=False)[0]
-    ip_list = []
     print(result)
     for sent,received in result:
         print({'ip': received.psrc, 'mac': received.hwsrc})
-        ip_list.append(element.psrc)
+        ip_list.append(received.psrc)
     return ip_list
+'''
 
 def reARP(target_ip, ap_ip):
     print(f"Restoring {target_ip}...")
