@@ -39,15 +39,19 @@ def get_mac_address(ip, interface):
 
 def ip_parser(ap_ip):
     ip_list = []
-    range = ap_ip
-    while range.endswith(".") == False:
-        range = range[:-1]
-    for ip in range(1,255):
-        address = range + ip
-        if ping(address) == 0:
-            ip_list.append(address)
-        else:
-            pass
+    rng = ap_ip
+    while rng.endswith(".") == False:
+        rng = rng[:-1]
+    try:
+        for ip in range(1,255):
+            address = rng + str(ip)
+            if ping(address) == 0:
+                ip_list.append(address)
+            else:
+                pass
+        return ip_list
+    except KeyboardInterrupt:
+        return ip_list
 '''
     arp = ARP(pdst=cidr)
     ether = Ether(dst="ff:ff:ff:ff:ff:ff")
