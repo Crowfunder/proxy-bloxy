@@ -7,6 +7,27 @@ It's simple, yet feature-rich:
 - A nice installator script.
 - Ability to run without any visual output.
 - And some more!
+### Options
+Entire script has following options
+```
+-h, --help                                         show this help message and exit
+
+-i INTERFACE, --interface INTERFACE                Pick an interface which'll be used.                                                               
+
+-g GATEWAY, --gateway GATEWAY                      Pick your gateway IP Address.                                                                     
+
+-t TIME, --time TIME                               Optional selection of delays between target poisons. (Default - 0.3)                                                                                   
+
+-p PINGS, --pings PINGS                            Optional selection of number of pings sent to network targets when 
+                                                   parsing ip list. (Default - 3)                                                       
+
+-c CSV, --csv CSV                                  Optional selection of CSV file/file path containing ip's list in 
+                                                   substitution for script-detected network targets. All addresses must be 
+                                                   placed in the different lines.
+
+-s {True,False}, --silent {True,False}             Optional selection of making the script return no status messages. 
+                                                   (Default - False) 
+```
 
 # Installation
 Before everything, you need [python3](https://www.python.org/downloads/) installed.
@@ -42,7 +63,7 @@ $ sudo python3 proxy_bloxy.py {args}
 3. Re-run install.sh.
 
 **I lost my internet connection when using this script**
-- That thing is caused by the fact that be block entire outgoing and forwarded traffic on iptables, and so we block ourselves too.
+- That thing is caused by the fact that we block entire outgoing and forwarded traffic on iptables, and so we block ourselves too.
 
 # Contributing
 As always, feel free to contribute to this project if you wish to. Just don't break the license!
