@@ -34,7 +34,7 @@ $ sudo python3 proxy_bloxy.py {args}
 # Troubleshooting
 
 **Permissions error prevent me from running "install.sh"**
-1) run `chmod +x install.sh`
+1. run `chmod +x install.sh`
 
 **I'm getting weird errors that like `/usr/bin/env: ‘python3\r’: No such file or directory`**
 1. Install `dos2unix` package. 
