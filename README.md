@@ -29,7 +29,8 @@ $ sudo proxy-bloxy {args}
 $ cd proxy-bloxy
 $ sudo python3 proxy_bloxy.py {args}
 ```
-### Troubleshooting
+# Troubleshooting
+
 **Permissions error prevent me from running "install.sh"**
 1) run `chmod +x install.sh`
 
