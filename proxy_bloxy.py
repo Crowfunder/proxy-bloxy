@@ -22,7 +22,7 @@ import sys,os,argparse,subprocess,csv
 ERR = '\033[0;31m'
 BAD_ERR = '\033[0;30m'
 GREEN="\033[0;32m"
-LOGO = '\033[1;35;47m'
+LOGO = '\033[0;35m'
 NONE = '\033[0m'
 ip_list = []
 target_ip = ""
@@ -32,6 +32,7 @@ ap_mac = ""
 interface = ""
 pings = 3
 delay = 0.3
+logoinvis = False
 
 ######################################################################################
 # Argparse
@@ -41,7 +42,8 @@ parser.add_argument('-g', '--gateway', type=str, required=True, help='''Pick you
 parser.add_argument('-t', '--time', type=float, default=0.3 ,required=False, help='''Optional selection of delays between target poisons. (Default - 0.3)''')
 parser.add_argument('-p', '--pings', type=int, default=3, required=False, help='''Optional selection of number of pings sent to network targets when parsing ip list. (Default - 3)''')
 parser.add_argument('-c', '--csv', type=str, required=False, help='''Optional selection of CSV file/file path containing ip's list in substitution for script-detected network targets. All addresses must be placed in the different lines.''') 
-parser.add_argument('-s', '--silent', type=bool, required=False, choices=[True,False], help='''Optional selection of making the script return no status messages. (Default - False)''')
+parser.add_argument('-s', '--silent', type=bool, required=False, default=False, choices=[True,False], help='''Optional selection of making the script return no status messages. (Default - False)''')
+parser.add_argument('-l', '--logo', type=bool, required=False, default=False, choices=[True,False], help='''Optional selection to turn off the logo visibility. (Default - False)''')
 args = parser.parse_args()
 
 #####################################################################################
@@ -153,10 +155,16 @@ def proxier(ap_ip, interface):
         ap_mac = get_mac_address(ap_ip, interface)
         if csvf:
             if silent == False:
+                if logoinvis == False:
+                    with open('logo.txt') as file:
+                        print(LOGO,file.read(),NONE)
                 print(NONE + "Detected a CSV file, skipping IP parsing and importing...")
             ip_list = csv_parser(csvf)
         else:
             if silent == False:
+                if logoinvis == False:
+                    with open('logo.txt') as file:
+                        print(LOGO,file.read(),NONE)
                 print(NONE + "Parsing available IP addresses, CTRL+C to stop if you wish...")
             ip_list = ip_parser(ap_ip)
         if silent == False:
@@ -194,6 +202,8 @@ def main():
     silent = False
     global csvf
     csvf = ''
+    global logoinvis
+    logoinvis = False
     if args.interface:
         interface = args.interface
     if args.gateway:
@@ -206,6 +216,8 @@ def main():
         csvf = args.csv
     if args.silent:
         silent = args.silent
+    if args.logo:
+        logoinvis = args.logo
     proxier(ap_ip, interface)
 
 if __name__ == '__main__':

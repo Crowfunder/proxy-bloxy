@@ -21,15 +21,17 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 echo -e "Installing proxy-bloxy..."
+echo -e "_______________________________________________________________"
 
 read -p "Would you like to sync with the latest remote branch? (y/n): " opt
 case $opt in
     [yY][eE][sS]|[yY])
-        git fetch origin && git reset --hard origin/master && git clean -f -d
+        git fetch --prune
         echo -e "${GREEN}Success!${NONE}"
         ;;
 esac
 
+echo -e "_______________________________________________________________"
 read -p "Would you like to download and/or update neccessary python packages? (y/n): " opt2
 case $opt2 in
     [yY][eE][sS]|[yY])
@@ -38,10 +40,12 @@ case $opt2 in
         ;;
 esac
 
+echo -e "_______________________________________________________________"
 if [ -f "/usr/local/bin/proxy-bloxy" ]; then
     echo -e "Detected other version installed, removing..."
     rm /usr/local/bin/proxy-bloxy
     echo -e "${GREEN}Success!${NONE}"
+    echo -e "_______________________________________________________________"
 fi
 
 cp proxy_bloxy.py /usr/local/bin
