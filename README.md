@@ -6,6 +6,7 @@ It's simple, yet feature-rich:
 - Handling CSV files as input instead of auto-discovery.
 - A nice installator script.
 - Ability to run without any visual output.
+- Fancy ASCII logo
 - And some more!
 ### Options
 Entire script has following options
@@ -27,6 +28,8 @@ Entire script has following options
 
 -s {True,False}, --silent {True,False}             Optional selection of making the script return no status messages. 
                                                    (Default - False) 
+                                                   
+-l {True,False}, --logo {True,False}               Optional selection to turn off the logo visibility. (Default - False)
 ```
 
 # Installation
@@ -64,6 +67,12 @@ $ sudo python3 proxy_bloxy.py {args}
 
 **I lost my internet connection when using this script**
 - That thing is caused by the fact that we block entire outgoing and forwarded traffic on iptables, and so we block ourselves too.
+
+**I lost my internet connection after force-exiting the script (ex. CTRL+Z)**
+1. Rerun the script and exit it normally by clicking CTRL+C some times letting exit-handler to finish the job. (Until you see `Exiting...`)
+
+**I've used it in a big network (multiple devices) and it doesn't work, why?**
+ - The thing is it **does** work, but it's too slow to handle constantly sending ARP requests to multiple clients, you can try to lower the delay between poisons with `-t` argument.
 
 # Contributing
 As always, feel free to contribute to this project if you wish to. Just don't break the license!
