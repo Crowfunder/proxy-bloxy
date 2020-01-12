@@ -26,7 +26,7 @@ echo -e "_______________________________________________________________"
 read -p "Would you like to sync with the latest remote branch? (y/n): " opt
 case $opt in
     [yY][eE][sS]|[yY])
-        git fetch --prune
+        git fetch origin && git reset --hard origin/master && git clean -f -d
         echo -e "${GREEN}Success!${NONE}"
         ;;
 esac
