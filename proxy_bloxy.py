@@ -87,18 +87,25 @@ def get_mac_address(ip, interface):
         return rcv.sprintf(r"%Ether.src%")
 
 # Basically just a network scanner
-def ip_parser(ap_ip):
+def ip_parser(ap_ip,interface):
     ip_list = []
+    clientip = os.popen('ip addr show '+interface+' | grep "\<inet\>" | awk \'{ print $2 }\' | awk -F "/" \'{ print $1 }\'').read().strip()
     rng = ap_ip
     while rng.endswith(".") == False:
         rng = rng[:-1]
     try:
-        for ip in range(1,255):
+        for ip in range(2,255):
             address = rng + str(ip)
             if ping(address) == 0:
-                ip_list.append(address)
+                if address != clientip:
+                    if silent == False:
+                        print(f"{GREEN}Found {address}!{NONE}")
+                    ip_list.append(address)
+                else:
+                    pass
             else:
                 pass
+        print(ip_list)
         return ip_list
     except KeyboardInterrupt:
         return ip_list
@@ -189,7 +196,7 @@ def proxier(ap_ip, interface):
                 if logoinvis == False:
                     print(LOGO,logo,NONE)
                 print(NONE + "Parsing available IP addresses, CTRL+C to stop if you wish...")
-            ip_list = ip_parser(ap_ip)
+            ip_list = ip_parser(ap_ip,interface)
         if silent == False:
             print(GREEN + "Done!" + NONE)
             print("Blocking entire outbound traffic...")
