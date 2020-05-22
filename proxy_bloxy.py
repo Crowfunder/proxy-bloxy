@@ -31,7 +31,6 @@ target_mac = ""
 ap_mac = ""
 interface = ""
 pings = 3
-delay = 0.3
 logoinvis = False
 logo = """
  _________________________________________________________________________________________________
@@ -182,7 +181,7 @@ def exit_handler(interface, ap_ip):
             
 #####################################################################################
 # Main function wrapping eveything up.
-def proxier(ap_ip, interface):
+def proxier(ap_ip, interface, delay):
     try:
         ap_mac = get_mac_address(ap_ip, interface)
         if csvf:
@@ -234,6 +233,7 @@ def main():
     csvf = ''
     global logoinvis
     logoinvis = False
+    delay = 0.3
     if args.interface:
         interface = args.interface
     if args.gateway:
@@ -248,7 +248,7 @@ def main():
         silent = args.silent
     if args.logo:
         logoinvis = args.logo
-    proxier(ap_ip, interface)
+    proxier(ap_ip, interface, delay)
 
 if __name__ == '__main__':
     main()
