@@ -3,14 +3,18 @@
 # Features
 It's simple, yet feature-rich:
 - Local network devices autodiscovery.
+- Multiprocessing
 - Handling CSV files as input instead of auto-discovery.
-- A nice installator script.
+- A single-file installation script written in bash.
 - Ability to run without any visual output.
 - Fancy ASCII logo
 - And some more!
+
 ### Options
-Entire script has following options
+proxy-bloxy has the following options:
+
 ```
+
 -h, --help                                         show this help message and exit
 
 -i INTERFACE, --interface INTERFACE                Pick an interface which'll be used.                                                               
@@ -22,7 +26,7 @@ Entire script has following options
 -p PINGS, --pings PINGS                            Optional selection of number of pings sent to network targets when 
                                                    parsing ip list. (Default - 3)                                                       
 
--c CSV, --csv CSV                                  Optional selection of CSV file/file path containing ip's list in 
+-v CSV, --csv CSV                                  Optional selection of CSV file/file path containing ip's list in 
                                                    substitution for script-detected network targets. All addresses must be 
                                                    placed in the different lines.
 
@@ -30,15 +34,34 @@ Entire script has following options
                                                    (Default - False) 
                                                    
 -l {True,False}, --logo {True,False}               Optional selection to turn off the logo visibility. (Default - False)
+
+-b SUBPROCESSES, --subprocesses SUBPROCESSES       Choose the subprocesses number limit. 
+                                                   (NOTE: If '0' is inputted script will automatically select the limit.)
+                                                   
+-c CYCLES, --cycles CYCLES                         Choose the number of poisoning cycles.
+
+
 ```
 
 # Installation
 Before everything, you need [python3](https://www.python.org/downloads/) installed.
-Then you've got to clone this repo with command:
+Further on you've got two options:
+
+### Option 1: Installation Script
+- In case you're going to use the newest release, pick one of the [releases.](https://github.com/Crowfunder/proxy-bloxy/releases)
+- Download **install.sh**.
+- Run it with root permissions
+```sh
+$ sudo ./install.sh
+```
+
+
+### Option 2: Manual
+Clone this repo with command:
 ```sh
 $ git clone https://github.com/crowfunder/proxy-bloxy.git
 ```
-Installation process is dead simple, you've got two options:
+
 - Run a prepared installator (install.sh) with a command:
 ```sh
 $ cd proxy-bloxy
@@ -48,7 +71,8 @@ You'll be able to run it from anywhere with command:
 ```
 $ sudo proxy-bloxy {args}
 ```
-- Or you can run it without installation, just install python requirements (scapy) and use:
+**OR**
+- You can run it without installation, just install python requirements and use:
 ```sh
 $ cd proxy-bloxy
 $ sudo python3 proxy_bloxy.py {args}
