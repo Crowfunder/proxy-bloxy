@@ -22,14 +22,22 @@ fi
 
 echo -e "Installing proxy-bloxy..."
 echo -e "_______________________________________________________________"
+if [ -f "proxy_bloxy.py" ]; then
+    read -p "Would you like to sync with the latest remote branch? (y/n): " opt
+    case $opt in
+        [yY][eE][sS]|[yY])
+            git fetch origin && git reset --hard origin/master && git clean -f -d
+            echo -e "${GREEN}Success!${NONE}"
+            ;;
+    esac
+else
+    echo -e "Downloading..."
+    echo -e "_______________________________________________________________"
+    git clone https://github.com/crowfunder/proxy-bloxy.git
+    cd proxy-bloxy
+    echo -e "${GREEN}Success!${NONE}"
+fi
 
-read -p "Would you like to sync with the latest remote branch? (y/n): " opt
-case $opt in
-    [yY][eE][sS]|[yY])
-        git fetch origin && git reset --hard origin/master && git clean -f -d
-        echo -e "${GREEN}Success!${NONE}"
-        ;;
-esac
 
 echo -e "_______________________________________________________________"
 read -p "Would you like to download and/or update neccessary python packages? (y/n): " opt2
